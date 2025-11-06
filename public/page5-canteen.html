@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Canteen Menu</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <script type="module" src="script/auth.js"></script>
+  <h2>🍴 Update Today’s Canteen Menu</h2>
+  <textarea id="input" placeholder="Enter menu... Example: Veg Thali ₹60, Pav Bhaji ₹50"></textarea>
+  <button id="save">Save Menu</button>
+
+  <h3>Current Menu:</h3>
+  <div id="live"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { firebaseConfig } from "./script/firebaseConfig.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const input = document.getElementById("input");
+    const live = document.getElementById("live");
+    const btn = document.getElementById("save");
+
+    btn.onclick = () => {
+      set(ref(db, "canteen"), input.value);
+    };
+
+    onValue(ref(db, "canteen"), (snap) => {
+      live.innerText = snap.val() || "No menu data yet.";
+    });
+  </script>
+</body>
+</html>

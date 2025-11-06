@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Attendance Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <script type="module" src="script/auth.js"></script>
+  <h2>📋 Update Attendance</h2>
+  <textarea id="input" placeholder="Enter attendance info... Example: CSE: 90%, IT: 85%"></textarea>
+  <button id="save">Save Attendance</button>
+
+  <h3>Current Attendance:</h3>
+  <div id="live"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { firebaseConfig } from "./script/firebaseConfig.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const input = document.getElementById("input");
+    const live = document.getElementById("live");
+    const btn = document.getElementById("save");
+
+    btn.onclick = () => {
+      set(ref(db, "attendance"), input.value);
+    };
+
+    onValue(ref(db, "attendance"), (snap) => {
+      live.innerText = snap.val() || "No attendance data yet.";
+    });
+  </script>
+</body>
+</html>

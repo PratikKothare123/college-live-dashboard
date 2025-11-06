@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>College Notices (Multiple)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <script type="module" src="script/auth.js"></script>
+  <h2>📢 College Notices Board</h2>
+
+  <!-- Input -->
+  <textarea id="notice" placeholder="Enter new notice..." rows="4" cols="40"></textarea><br>
+  <button id="save">Add Notice</button>
+
+  <h3>🧾 All Notices (Live):</h3>
+  <ul id="noticeList" style="list-style-type: none; padding-left: 0;"></ul>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { firebaseConfig } from "./script/firebaseConfig.js";
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const input = document.getElementById("notice");
+    const list = document.getElementById("noticeList");
+    const saveBtn = document.getElementById("save");
+
+    // Add new notice
+    saveBtn.onclick = () => {
+      const text = input.value.trim();
+      if (!text) {
+        alert("Please enter a notice!");
+        return;
+      }
+
+      const noticesRef = ref(db, "notices");
+      push(noticesRef, {
+        text: text,
+        timestamp: new Date().toLocaleString(),
+      })
+        .then(() => {
+          input.value = "";
+          alert("✅ Notice added successfully!");
+        })
+        .catch((err) => alert("❌ Error: " + err.message));
+    };
+
+    // Display all notices
+    onValue(ref(db, "notices"), (snapshot) => {
+      list.innerHTML = ""; // clear previous list
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        Object.values(data)
+          .reverse() // latest on top
+          .forEach((item) => {
+            const li = document.createElement("li");
+            li.style.background = "#eef";
+            li.style.margin = "10px 0";
+            li.style.padding = "10px";
+            li.style.borderRadius = "8px";
+            li.innerHTML = `<strong>${item.text}</strong><br><small>🕒 ${item.timestamp}</small>`;
+            list.appendChild(li);
+          });
+      } else {
+        list.innerHTML = "<li>No notices yet.</li>";
+      }
+    });
+  </script>
+</body>
+</html>
