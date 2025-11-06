@@ -10,6 +10,11 @@ app.use(express.json());
 
 const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
 
+app.get("/", (req, res) => {
+  res.send("✅ Twilio OTP Server is running successfully on Render!");
+});
+
+
 app.post("/send-otp", async (req, res) => {
   const { phone } = req.body;
   try {
