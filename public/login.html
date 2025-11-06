@@ -1,43 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login with OTP</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 300px;
+      text-align: center;
+    }
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      width: 95%;
+      padding: 10px;
+      margin: 10px 0;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <h2>📱 Login with Phone Number</h2>
-    <input id="phone" placeholder="+91XXXXXXXXXX" />
+    <input id="phone" placeholder="+91XXXXXXXXXX" type="tel" />
     <button onclick="sendOTP()">Send OTP</button>
 
-    <input id="otp" placeholder="Enter OTP" />
+    <input id="otp" placeholder="Enter OTP" type="number" />
     <button onclick="verifyOTP()">Verify OTP</button>
   </div>
 
   <script>
+    const BACKEND_URL = "https://college-otp-server.onrender.com"; // ✅ Your live Render backend
+
     async function sendOTP() {
-      const phone = document.getElementById("phone").value;
-      await fetch("http://localhost:4000/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone })
-      });
-      alert("OTP Sent!");
+      const phone = document.getElementById("phone").value.trim();
+      if (!phone.startsWith("+91") || phone.length < 10) {
+        alert("⚠️ Please enter a valid phone number (e.g., +919876543210)");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/send-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert("✅ OTP sent successfully!");
+        } else {
+          alert("❌ Failed to send OTP: " + (data.message || "Unknown error"));
+        }
+      } catch (err) {
+        console.error(err);
+        alert("❌ Server error: Please check your backend connection.");
+      }
     }
 
     async function verifyOTP() {
-      const phone = document.getElementById("phone").value;
-      const otp = document.getElementById("otp").value;
-      const res = await fetch("http://localhost:4000/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, otp })
-      });
-      const data = await res.json();
-      if (data.success) {
-        localStorage.setItem("userPhone", phone);
-        window.location.href = "index.html";
-      } else alert("Invalid OTP");
+      const phone = document.getElementById("phone").value.trim();
+      const otp = document.getElementById("otp").value.trim();
+
+      if (!otp) {
+        alert("⚠️ Please enter the OTP received on your phone.");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/verify-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone, otp })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert("✅ Login successful!");
+          localStorage.setItem("userPhone", phone);
+          window.location.href = "index.html";
+        } else {
+          alert("❌ Invalid OTP. Please try again.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("❌ Server error: Please check your backend connection.");
+      }
     }
   </script>
 </body>
