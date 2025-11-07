@@ -84,3 +84,13 @@ const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`✅ Twilio OTP Server running on port ${PORT}`);
 });
+
+
+// --- KEEP SERVER ALIVE ---
+import fetch from "node-fetch"; // or const fetch = require("node-fetch"); if using CommonJS
+
+setInterval(() => {
+  fetch("https://college-live-dashboard.onrender.com/")
+    .then(() => console.log("🟢 Keep-alive ping successful"))
+    .catch((err) => console.error("🔴 Keep-alive ping failed:", err.message));
+}, 10 * 60 * 1000); // every 10 minutes

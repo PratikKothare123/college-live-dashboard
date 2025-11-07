@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>College Live Dashboard</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://college-live-dashboard.onrender.com https://www.gstatic.com https://www.googleapis.com https://*.firebaseio.com https://*.googleapis.com; style-src 'self' 'unsafe-inline'; script-src 'self' https://www.gstatic.com https://www.googleapis.com 'unsafe-inline'; connect-src *;">
+  
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -97,6 +99,7 @@
   <button id="logout">Logout</button>
 
   <script type="module">
+    // Import Firebase SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
     import { firebaseConfig } from "./script/firebaseConfig.js";
@@ -105,11 +108,16 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Show logged-in user
-    document.getElementById("userPhone").innerText =
-      localStorage.getItem("userPhone") || "Guest";
+    // User Authentication Check
+    const userPhone = localStorage.getItem("userPhone");
+    if (!userPhone) {
+      alert("⚠️ Please login first!");
+      window.location.href = "login.html";
+    } else {
+      document.getElementById("userPhone").innerText = userPhone;
+    }
 
-    // Realtime data sync
+    // Realtime Data Display
     const paths = ["notices", "attendance", "library", "events", "canteen"];
     paths.forEach((path) => {
       const element = document.getElementById(path);
@@ -121,9 +129,10 @@
       });
     });
 
-    // Logout button
+    // Logout button functionality
     document.getElementById("logout").addEventListener("click", () => {
       localStorage.removeItem("userPhone");
+      alert("You have been logged out.");
       window.location.href = "login.html";
     });
   </script>

@@ -1,72 +1,87 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>College Notices (Multiple)</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📢 Notices - College Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8fafc;
+      padding: 20px;
+    }
+    h2 {
+      color: #2c3e50;
+      text-align: center;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      margin-top: 15px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .data-box {
+      margin-top: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
 <body>
-  <script type="module" src="script/auth.js"></script>
-  <h2>📢 College Notices Board</h2>
+  <h2>📢 College Notices</h2>
+  <textarea id="noticeInput" placeholder="Enter new notice here..."></textarea>
+  <button id="updateBtn">Update Notice</button>
 
-  <!-- Input -->
-  <textarea id="notice" placeholder="Enter new notice..." rows="4" cols="40"></textarea><br>
-  <button id="save">Add Notice</button>
+  <div class="data-box">
+    <h3>Latest Notice:</h3>
+    <p id="noticeDisplay">Loading...</p>
+  </div>
 
-  <h3>🧾 All Notices (Live):</h3>
-  <ul id="noticeList" style="list-style-type: none; padding-left: 0;"></ul>
+  <button onclick="window.location.href='index.html'">🏠 Back to Dashboard</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
     import { firebaseConfig } from "./script/firebaseConfig.js";
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const input = document.getElementById("notice");
-    const list = document.getElementById("noticeList");
-    const saveBtn = document.getElementById("save");
+    const noticeRef = ref(db, "notices");
 
-    // Add new notice
-    saveBtn.onclick = () => {
-      const text = input.value.trim();
-      if (!text) {
-        alert("Please enter a notice!");
-        return;
-      }
-
-      const noticesRef = ref(db, "notices");
-      push(noticesRef, {
-        text: text,
-        timestamp: new Date().toLocaleString(),
-      })
-        .then(() => {
-          input.value = "";
-          alert("✅ Notice added successfully!");
-        })
-        .catch((err) => alert("❌ Error: " + err.message));
-    };
-
-    // Display all notices
-    onValue(ref(db, "notices"), (snapshot) => {
-      list.innerHTML = ""; // clear previous list
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        Object.values(data)
-          .reverse() // latest on top
-          .forEach((item) => {
-            const li = document.createElement("li");
-            li.style.background = "#eef";
-            li.style.margin = "10px 0";
-            li.style.padding = "10px";
-            li.style.borderRadius = "8px";
-            li.innerHTML = `<strong>${item.text}</strong><br><small>🕒 ${item.timestamp}</small>`;
-            list.appendChild(li);
-          });
+    // Update notice
+    document.getElementById("updateBtn").addEventListener("click", async () => {
+      const notice = document.getElementById("noticeInput").value.trim();
+      if (notice) {
+        await set(noticeRef, notice);
+        alert("✅ Notice updated successfully!");
       } else {
-        list.innerHTML = "<li>No notices yet.</li>";
+        alert("⚠️ Please enter a notice before updating.");
       }
+    });
+
+    // Display live updates
+    onValue(noticeRef, (snapshot) => {
+      const val = snapshot.val();
+      document.getElementById("noticeDisplay").innerText = val ? val : "No notice available.";
     });
   </script>
 </body>

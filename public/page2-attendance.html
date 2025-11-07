@@ -1,17 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Attendance Tracker</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📋 Attendance - College Dashboard</title>
+  <style>
+    body { font-family: Arial; background: #f8fafc; padding: 20px; }
+    h2 { text-align: center; color: #2c3e50; }
+    input, button { margin: 10px; padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; }
+    button { background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .data-box { margin-top: 20px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+  </style>
 </head>
 <body>
-  <script type="module" src="script/auth.js"></script>
-  <h2>📋 Update Attendance</h2>
-  <textarea id="input" placeholder="Enter attendance info... Example: CSE: 90%, IT: 85%"></textarea>
-  <button id="save">Save Attendance</button>
+  <h2>📋 Student Attendance</h2>
+  <input id="attendanceInput" placeholder="Enter attendance info (e.g., 'Class A - 85%')" />
+  <button id="updateBtn">Update Attendance</button>
 
-  <h3>Current Attendance:</h3>
-  <div id="live"></div>
+  <div class="data-box">
+    <h3>Current Attendance:</h3>
+    <p id="attendanceDisplay">Loading...</p>
+  </div>
+  <button onclick="window.location.href='index.html'">🏠 Back to Dashboard</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
@@ -21,16 +32,19 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const input = document.getElementById("input");
-    const live = document.getElementById("live");
-    const btn = document.getElementById("save");
+    const attendanceRef = ref(db, "attendance");
 
-    btn.onclick = () => {
-      set(ref(db, "attendance"), input.value);
-    };
+    document.getElementById("updateBtn").addEventListener("click", async () => {
+      const data = document.getElementById("attendanceInput").value.trim();
+      if (data) {
+        await set(attendanceRef, data);
+        alert("✅ Attendance updated successfully!");
+      }
+    });
 
-    onValue(ref(db, "attendance"), (snap) => {
-      live.innerText = snap.val() || "No attendance data yet.";
+    onValue(attendanceRef, (snapshot) => {
+      const val = snapshot.val();
+      document.getElementById("attendanceDisplay").innerText = val ? val : "No attendance data yet.";
     });
   </script>
 </body>

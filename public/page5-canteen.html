@@ -1,17 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Canteen Menu</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍴 Canteen - College Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f8fafc; padding: 20px; }
+    h2 { text-align: center; color: #2c3e50; }
+    textarea { width: 100%; height: 150px; margin-top: 15px; padding: 10px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc; }
+    button { margin-top: 15px; padding: 10px 20px; font-size: 16px; border: none; background: #ff9800; color: white; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #e68900; }
+    .data-box { margin-top: 20px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+  </style>
 </head>
 <body>
-  <script type="module" src="script/auth.js"></script>
-  <h2>🍴 Update Today’s Canteen Menu</h2>
-  <textarea id="input" placeholder="Enter menu... Example: Veg Thali ₹60, Pav Bhaji ₹50"></textarea>
-  <button id="save">Save Menu</button>
+  <h2>🍴 College Canteen Menu</h2>
+  <textarea id="canteenInput" placeholder="Enter today’s menu or canteen notice..."></textarea>
+  <button id="updateBtn">Update Canteen Info</button>
 
-  <h3>Current Menu:</h3>
-  <div id="live"></div>
+  <div class="data-box">
+    <h3>Today's Menu:</h3>
+    <p id="canteenDisplay">Loading...</p>
+  </div>
+
+  <button onclick="window.location.href='index.html'">🏠 Back to Dashboard</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
@@ -21,16 +33,23 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const input = document.getElementById("input");
-    const live = document.getElementById("live");
-    const btn = document.getElementById("save");
+    const canteenRef = ref(db, "canteen");
 
-    btn.onclick = () => {
-      set(ref(db, "canteen"), input.value);
-    };
+    // Update canteen info
+    document.getElementById("updateBtn").addEventListener("click", async () => {
+      const data = document.getElementById("canteenInput").value.trim();
+      if (data) {
+        await set(canteenRef, data);
+        alert("✅ Canteen info updated successfully!");
+      } else {
+        alert("⚠️ Please enter canteen data before updating.");
+      }
+    });
 
-    onValue(ref(db, "canteen"), (snap) => {
-      live.innerText = snap.val() || "No menu data yet.";
+    // Display real-time canteen data
+    onValue(canteenRef, (snapshot) => {
+      const val = snapshot.val();
+      document.getElementById("canteenDisplay").innerText = val ? val : "No canteen data available.";
     });
   </script>
 </body>

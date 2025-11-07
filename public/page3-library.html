@@ -1,17 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Library Info</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📚 Library - College Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8fafc;
+      padding: 20px;
+    }
+    h2 {
+      color: #2c3e50;
+      text-align: center;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      margin-top: 15px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .data-box {
+      margin-top: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
 <body>
-  <script type="module" src="script/auth.js"></script>
-  <h2>📚 Update Library Information</h2>
-  <textarea id="input" placeholder="Enter library info... Example: 25 books issued today"></textarea>
-  <button id="save">Save Library Info</button>
+  <h2>📚 Library Updates</h2>
+  <textarea id="libraryInput" placeholder="Enter library info (e.g., 'New books added in Section A')..."></textarea>
+  <button id="updateBtn">Update Library Info</button>
 
-  <h3>Current Library Data:</h3>
-  <div id="live"></div>
+  <div class="data-box">
+    <h3>Current Library Info:</h3>
+    <p id="libraryDisplay">Loading...</p>
+  </div>
+
+  <button onclick="window.location.href='index.html'">🏠 Back to Dashboard</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
@@ -21,16 +65,23 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const input = document.getElementById("input");
-    const live = document.getElementById("live");
-    const btn = document.getElementById("save");
+    const libraryRef = ref(db, "library");
 
-    btn.onclick = () => {
-      set(ref(db, "library"), input.value);
-    };
+    // Update library info
+    document.getElementById("updateBtn").addEventListener("click", async () => {
+      const data = document.getElementById("libraryInput").value.trim();
+      if (data) {
+        await set(libraryRef, data);
+        alert("✅ Library information updated successfully!");
+      } else {
+        alert("⚠️ Please enter some data before updating.");
+      }
+    });
 
-    onValue(ref(db, "library"), (snap) => {
-      live.innerText = snap.val() || "No library data yet.";
+    // Display real-time library info
+    onValue(libraryRef, (snapshot) => {
+      const val = snapshot.val();
+      document.getElementById("libraryDisplay").innerText = val ? val : "No library info available.";
     });
   </script>
 </body>
