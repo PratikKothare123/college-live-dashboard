@@ -6,6 +6,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import twilio from "twilio";
+import fetch from "node-fetch"; // ✅ Added fetch import correctly
 
 dotenv.config();
 const app = express();
@@ -14,17 +15,28 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Root route (Render test)
+// ===============================
+// 🌍 Root route (Render test)
+// ===============================
 app.get("/", (req, res) => {
   res.send("✅ Twilio OTP Server is running successfully on Render!");
 });
 
-// Initialize Twilio client
-if (!process.env.TWILIO_SID || !process.env.TWILIO_AUTH || !process.env.TWILIO_SERVICE) {
-  console.error("❌ Missing Twilio environment variables! Please check Render Settings → Environment.");
+// ===============================
+// 🔑 Check Twilio environment variables
+// ===============================
+if (
+  !process.env.TWILIO_SID ||
+  !process.env.TWILIO_AUTH ||
+  !process.env.TWILIO_SERVICE
+) {
+  console.error(
+    "❌ Missing Twilio environment variables! Please check Render → Environment Settings."
+  );
   process.exit(1);
 }
 
+// Initialize Twilio client
 const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
 
 // ===============================
@@ -34,7 +46,9 @@ app.post("/send-otp", async (req, res) => {
   const { phone } = req.body;
 
   if (!phone) {
-    return res.status(400).json({ success: false, message: "Phone number is required" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Phone number is required" });
   }
 
   try {
@@ -43,10 +57,20 @@ app.post("/send-otp", async (req, res) => {
       .verifications.create({ to: phone, channel: "sms" });
 
     console.log(`✅ OTP sent to ${phone}`);
-    res.json({ success: true, message: "OTP sent successfully", sid: verification.sid });
+    res.json({
+      success: true,
+      message: "OTP sent successfully",
+      sid: verification.sid,
+    });
   } catch (error) {
     console.error("❌ Error sending OTP:", error);
-    res.status(500).json({ success: false, message: "Failed to send OTP", error: error.message });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Failed to send OTP",
+        error: error.message,
+      });
   }
 });
 
@@ -57,7 +81,12 @@ app.post("/verify-otp", async (req, res) => {
   const { phone, otp } = req.body;
 
   if (!phone || !otp) {
-    return res.status(400).json({ success: false, message: "Phone number and OTP are required" });
+    return res
+      .status(400)
+      .json({
+        success: false,
+        message: "Phone number and OTP are required",
+      });
   }
 
   try {
@@ -73,7 +102,13 @@ app.post("/verify-otp", async (req, res) => {
     }
   } catch (error) {
     console.error("❌ Error verifying OTP:", error);
-    res.status(500).json({ success: false, message: "OTP verification failed", error: error.message });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "OTP verification failed",
+        error: error.message,
+      });
   }
 });
 
@@ -85,12 +120,13 @@ app.listen(PORT, () => {
   console.log(`✅ Twilio OTP Server running on port ${PORT}`);
 });
 
-
-// --- KEEP SERVER ALIVE ---
-import fetch from "node-fetch"; // or const fetch = require("node-fetch"); if using CommonJS
-
+// ===============================
+// ♻️ KEEP SERVER ALIVE (prevent sleep)
+// ===============================
 setInterval(() => {
   fetch("https://college-live-dashboard.onrender.com/")
     .then(() => console.log("🟢 Keep-alive ping successful"))
-    .catch((err) => console.error("🔴 Keep-alive ping failed:", err.message));
+    .catch((err) =>
+      console.error("🔴 Keep-alive ping failed:", err.message)
+    );
 }, 10 * 60 * 1000); // every 10 minutes
